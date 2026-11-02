@@ -3,11 +3,15 @@ import react from '@vitejs/plugin-react';
 import electron from 'vite-plugin-electron';
 import path from 'path';
 
+// CAPACITOR=1 → iOS-Build ohne Electron-Plugins
+const isCapacitor = process.env.CAPACITOR === '1';
+
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: isCapacitor ? './' : '/',
   plugins: [
     react(),
-    electron([
+    ...(isCapacitor ? [] : [electron([
       {
         entry: 'electron/main.ts',
         onstart(options) {
@@ -29,7 +33,7 @@ export default defineConfig({
           },
         },
       },
-    ]),
+    ])]),
   ],
   // PouchDB benötigt 'global' Variable (Node.js Kompatibilität)
   define: {

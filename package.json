@@ -12,7 +12,9 @@
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
     "electron:build": "vite build && electron-builder",
     "build:clean": "node build-safe.js",
-    "build:safe": "node build-safe.js"
+    "build:safe": "node build-safe.js",
+    "ios:build": "CAPACITOR=1 vite build && cp -R assets/. dist/assets/ && cap sync ios",
+    "ios:open": "cap open ios"
   },
   "keywords": [
     "electron",
@@ -21,6 +23,9 @@
     "whiteboard"
   ],
   "dependencies": {
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/ios": "^8.6.0",
     "@excalidraw/excalidraw": "^0.17.0",
     "electron-updater": "^6.6.2",
     "events": "^3.3.0",
@@ -32,6 +37,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.6.0",
     "@types/node": "^20.11.0",
     "@types/pouchdb": "^6.4.2",
     "@types/pouchdb-find": "^7.3.3",

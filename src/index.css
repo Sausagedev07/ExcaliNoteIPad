@@ -16,6 +16,16 @@ body {
 #root {
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
+  box-sizing: border-box;
+  /* iOS/iPadOS: Statusleiste, Home-Indikator und Notch aussparen */
+  padding: env(safe-area-inset-top) env(safe-area-inset-right)
+    env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+#root > div {
+  height: 100% !important;
+  width: 100% !important;
 }
 
 /* Excalidraw-spezifische Styles */
