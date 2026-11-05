@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>ExcaliNote – Startseite</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+body{margin:0}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 1194px; height: 834px; display: flex; background: #F7F3EA; color: #26223A; font-family: 'Inter', system-ui, sans-serif; overflow: hidden">
+
+  <!-- Notizbuch-Leiste (leer) -->
+  <nav aria-label="Notizbücher" style="width: 84px; flex-shrink: 0; background: #EFE9DC; border-right: 1px solid #E0D8C6; display: flex; flex-direction: column; align-items: center; padding: 16px 0; box-sizing: border-box; gap: 6px">
+    <div style="width: 48px; height: 48px; border-radius: 14px; background: {{accent}}; display: flex; align-items: center; justify-content: center; margin-bottom: 10px">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><path d="M9 3v18"></path><path d="M13 8h3M13 12h3"></path></svg>
+    </div>
+    <button type="button" aria-label="Neues Notizbuch" style="width: 48px; height: 48px; border: 1.5px dashed #8A8398; border-radius: 14px; background: transparent; color: #4F4A63; display: flex; align-items: center; justify-content: center; margin-top: 4px; cursor: pointer">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+    </button>
+    <div style="flex: 1"></div>
+    <button type="button" aria-label="Einstellungen" style="width: 56px; border: none; border-radius: 14px; background: transparent; padding: 6px 0; color: #26223A; display: flex; flex-direction: column; align-items: center; gap: 3px; cursor: pointer">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"></path><circle cx="15" cy="7" r="2"></circle><circle cx="9" cy="17" r="2"></circle></svg>
+      <span style="font-size: 11px; font-weight: 500">Optionen</span>
+    </button>
+  </nav>
+
+  <!-- Seitenliste (leer) -->
+  <section aria-label="Seiten" style="width: 300px; flex-shrink: 0; background: #F7F3EA; border-right: 1px solid #E0D8C6; display: flex; flex-direction: column; padding: 20px 16px 16px; box-sizing: border-box; gap: 14px">
+    <div>
+      <h2 style="margin: 0; font-family: 'Caveat', cursive; font-weight: 700; font-size: 38px; line-height: 1; color: #26223A">Seiten</h2>
+      <p style="margin: 4px 0 0; font-size: 13px; color: #5F5A73">Noch kein Notizbuch gewählt</p>
+    </div>
+    <div style="margin-top: 8px; border: 1.5px dashed #B8AFC6; border-radius: 16px; padding: 28px 20px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#5F5A73" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+      <p style="margin: 0; font-size: 15px; font-weight: 600">Keine Notizbücher</p>
+      <p style="margin: 0; font-size: 13px; line-height: 1.45; color: #5F5A73">Lege links ein Notizbuch an, dann erscheinen hier deine Seiten.</p>
+    </div>
+  </section>
+
+  <!-- Willkommen -->
+  <main style="flex: 1; min-width: 0; display: flex; align-items: center; justify-content: center; background-color: #FFFEFB; background-image: radial-gradient(#D9D2C3 1.3px, transparent 1.3px); background-size: 26px 26px">
+    <div style="width: 520px; display: flex; flex-direction: column; align-items: flex-start; gap: 22px; background: #FFFEFB; padding: 36px 40px; border-radius: 28px; border: 1px solid #E6DFD0; box-shadow: 0 16px 40px rgba(38, 34, 58, 0.08); box-sizing: border-box">
+      <div style="width: 72px; height: 72px; border-radius: 22px; background: {{accent}}; display: flex; align-items: center; justify-content: center">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><path d="M9 3v18"></path><path d="M13 8h3M13 12h3"></path></svg>
+      </div>
+      <div>
+        <h1 style="margin: 0; font-family: 'Caveat', cursive; font-weight: 700; font-size: 54px; line-height: 1; color: #26223A">Willkommen bei ExcaliNote</h1>
+        <p style="margin: 12px 0 0; font-size: 16px; line-height: 1.5; color: #4F4A63">Zeichne, skizziere und schreibe von Hand. Deine Notizen bleiben auf diesem iPad.</p>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; width: 100%">
+        <button type="button" style="height: 56px; border: none; border-radius: 16px; background: {{accent}}; color: #FFFFFF; font-size: 17px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+          Erstes Notizbuch anlegen
+        </button>
+        <button type="button" style="height: 52px; border: 1px solid #CDBFE6; border-radius: 16px; background: #F4EFFB; color: #4A2F86; font-size: 16px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v11"></path><path d="M8 11l4 4 4-4"></path><path d="M5 19h14"></path></svg>
+          Aus Dateien importieren
+        </button>
+      </div>
+      <ul style="list-style: none; margin: 4px 0 0; padding: 18px 0 0; border-top: 1px solid #E6DFD0; width: 100%; display: flex; flex-direction: column; gap: 12px">
+        <li style="display: flex; align-items: center; gap: 12px; font-size: 14px; color: #4F4A63">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B7568" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M5 12l5 5 9-10"></path></svg>
+          Alles wird automatisch lokal gespeichert
+        </li>
+        <li style="display: flex; align-items: center; gap: 12px; font-size: 14px; color: #4F4A63">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B7568" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M5 12l5 5 9-10"></path></svg>
+          Sichtbar in der Dateien-App unter „ExcaliNote“
+        </li>
+        <li style="display: flex; align-items: center; gap: 12px; font-size: 14px; color: #4F4A63">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B7568" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M5 12l5 5 9-10"></path></svg>
+          Synchronisation ist optional und standardmäßig aus
+        </li>
+      </ul>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#6D4AB0","options":["#6D4AB0","#2A6AB0","#1B7568","#B0386B"]},"$preview":{"width":1194,"height":834}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#6D4AB0' };
+  }
+}
+</script>
+</body>
+</html>

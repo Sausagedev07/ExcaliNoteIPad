@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>ExcaliNote – Einstellungen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Inter:wght@400;500;600&display=swap">
+<style>
+body{margin:0}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 640px; height: 834px; display: flex; flex-direction: column; background: #F7F3EA; color: #26223A; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; box-sizing: border-box; padding: 20px 24px 20px">
+
+  <header style="display: flex; align-items: center; justify-content: space-between; height: 56px; flex-shrink: 0">
+    <h1 style="margin: 0; font-family: 'Caveat', cursive; font-weight: 700; font-size: 44px; line-height: 1">Einstellungen</h1>
+    <button type="button" style="height: 44px; min-width: 88px; border: none; border-radius: 22px; background: {{accent}}; color: #FFFFFF; font-size: 16px; font-weight: 600; padding: 0 22px; cursor: pointer">Fertig</button>
+  </header>
+
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 22px; margin-top: 14px; min-height: 0">
+
+    <!-- Speicher -->
+    <section aria-labelledby="h-speicher">
+      <h2 id="h-speicher" style="margin: 0 0 8px 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #5F5A73">Speicher</h2>
+      <div style="background: #FFFEFB; border: 1px solid #E6DFD0; border-radius: 18px; overflow: hidden">
+        <div style="display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 16px; border-bottom: 1px solid #EDE6D6">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5F5A73" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+          <div style="flex: 1; min-width: 0">
+            <div style="font-size: 16px; font-weight: 500">Speicherort</div>
+            <div style="font-size: 13px; color: #5F5A73">Dateien › Auf meinem iPad › ExcaliNote</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 16px; border-bottom: 1px solid #EDE6D6">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5F5A73" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><rect x="5" y="3" width="14" height="18" rx="2.5"></rect><path d="M9 3v18"></path></svg>
+          <div style="flex: 1; font-size: 16px; font-weight: 500">Belegt</div>
+          <div style="font-size: 15px; color: #4F4A63">38 Seiten · 14,2 MB</div>
+        </div>
+        <button type="button" style="width: 100%; display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 16px; border: none; background: transparent; text-align: left; cursor: pointer; color: #4A2F86">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M12 15V4"></path><path d="M8 8l4-4 4 4"></path><path d="M5 13v6h14v-6"></path></svg>
+          <span style="flex: 1; font-size: 16px; font-weight: 600">Backup als ZIP exportieren</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Synchronisation -->
+    <section aria-labelledby="h-sync">
+      <h2 id="h-sync" style="margin: 0 0 8px 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #5F5A73">Synchronisation</h2>
+      <div style="background: #FFFEFB; border: 1px solid #E6DFD0; border-radius: 18px; overflow: hidden">
+        <div style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 0 16px; border-bottom: 1px solid #EDE6D6">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5F5A73" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><path d="M3 3l18 18"></path><path d="M7.6 7.6A5.5 5.5 0 0 0 7 18h10.5"></path><path d="M10.8 5.3A5.5 5.5 0 0 1 17.4 9.4 4 4 0 0 1 20.5 14.5"></path></svg>
+          <div style="flex: 1; min-width: 0">
+            <div style="font-size: 16px; font-weight: 500">Mit CouchDB synchronisieren</div>
+            <div style="font-size: 13px; color: #5F5A73">Aus · alle Notizen bleiben nur auf diesem iPad</div>
+          </div>
+          <button type="button" role="switch" aria-checked="false" aria-label="Synchronisation" style="width: 56px; height: 44px; border: none; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer">
+            <span style="width: 52px; height: 32px; border-radius: 16px; background: #8F88A2; position: relative; display: block">
+              <span style="position: absolute; left: 3px; top: 3px; width: 26px; height: 26px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(38, 34, 58, 0.3)"></span>
+            </span>
+          </button>
+        </div>
+        <button type="button" style="width: 100%; display: flex; align-items: center; gap: 14px; min-height: 56px; padding: 0 16px; border: none; background: transparent; text-align: left; cursor: pointer; color: #26223A">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5F5A73" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0"><rect x="3" y="4" width="18" height="6" rx="2"></rect><rect x="3" y="14" width="18" height="6" rx="2"></rect><path d="M7 7h.01M7 17h.01"></path></svg>
+          <span style="flex: 1; font-size: 16px; font-weight: 500">Server einrichten</span>
+          <span style="font-size: 14px; color: #5F5A73">Nur HTTPS</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5F5A73" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+        </button>
+      </div>
+    </section>
+
+    <!-- Darstellung -->
+    <section aria-labelledby="h-look">
+      <h2 id="h-look" style="margin: 0 0 8px 6px; font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: #5F5A73">Darstellung</h2>
+      <div style="background: #FFFEFB; border: 1px solid #E6DFD0; border-radius: 18px; overflow: hidden">
+        <div style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 0 16px; border-bottom: 1px solid #EDE6D6">
+          <div style="flex: 1; font-size: 16px; font-weight: 500">Design</div>
+          <div role="group" aria-label="Design" style="display: flex; padding: 3px; border-radius: 12px; background: #EFE9DC; gap: 2px">
+            <button type="button" aria-pressed="true" style="height: 40px; min-width: 72px; border: none; border-radius: 10px; background: #FFFFFF; box-shadow: 0 1px 4px rgba(38, 34, 58, 0.15); font-size: 15px; font-weight: 600; color: #26223A; cursor: pointer">Hell</button>
+            <button type="button" aria-pressed="false" style="height: 40px; min-width: 72px; border: none; border-radius: 10px; background: transparent; font-size: 15px; font-weight: 500; color: #4F4A63; cursor: pointer">Dunkel</button>
+            <button type="button" aria-pressed="false" style="height: 40px; min-width: 72px; border: none; border-radius: 10px; background: transparent; font-size: 15px; font-weight: 500; color: #4F4A63; cursor: pointer">Auto</button>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 14px; min-height: 60px; padding: 0 16px; border-bottom: 1px solid #EDE6D6">
+          <div style="flex: 1; font-size: 16px; font-weight: 500">Punktraster auf der Seite</div>
+          <button type="button" role="switch" aria-checked="true" aria-label="Punktraster" style="width: 56px; height: 44px; border: none; background: transparent; padding: 0; display: flex; align-items: center; justify-content: center; cursor: pointer">
+            <span style="width: 52px; height: 32px; border-radius: 16px; background: {{accent}}; position: relative; display: block">
+              <span style="position: absolute; right: 3px; top: 3px; width: 26px; height: 26px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(38, 34, 58, 0.3)"></span>
+            </span>
+          </button>
+        </div>
+        <div style="display: flex; align-items: center; gap: 6px; min-height: 64px; padding: 0 12px 0 16px">
+          <div style="flex: 1; font-size: 16px; font-weight: 500">Akzentfarbe</div>
+          <button type="button" aria-label="Akzentfarbe Violett" aria-pressed="true" style="width: 44px; height: 44px; border: none; border-radius: 50%; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer"><span style="width: 26px; height: 26px; border-radius: 50%; background: #6D4AB0; box-shadow: 0 0 0 3px #FFFEFB, 0 0 0 5px #6D4AB0"></span></button>
+          <button type="button" aria-label="Akzentfarbe Blau" aria-pressed="false" style="width: 44px; height: 44px; border: none; border-radius: 50%; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer"><span style="width: 26px; height: 26px; border-radius: 50%; background: #2A6AB0"></span></button>
+          <button type="button" aria-label="Akzentfarbe Grün" aria-pressed="false" style="width: 44px; height: 44px; border: none; border-radius: 50%; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer"><span style="width: 26px; height: 26px; border-radius: 50%; background: #1B7568"></span></button>
+          <button type="button" aria-label="Akzentfarbe Rosa" aria-pressed="false" style="width: 44px; height: 44px; border: none; border-radius: 50%; background: transparent; display: flex; align-items: center; justify-content: center; cursor: pointer"><span style="width: 26px; height: 26px; border-radius: 50%; background: #B0386B"></span></button>
+        </div>
+      </div>
+    </section>
+
+    <div style="flex: 1"></div>
+    <p style="margin: 0; text-align: center; font-size: 13px; color: #5F5A73">ExcaliNote 0.5.1 · iPad-Version</p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#6D4AB0","options":["#6D4AB0","#2A6AB0","#1B7568","#B0386B"]},"$preview":{"width":640,"height":834}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { accent: this.props.accent ?? '#6D4AB0' };
+  }
+}
+</script>
+</body>
+</html>
