@@ -1,0 +1,728 @@
+/* iPad-Oberfläche (docs/UI-REDESIGN.md). Farben kommen aus den Tokens in src/index.css.
+   Abstände im 4er-Raster, Radien verschachtelt (innen = außen − Abstand). */
+
+/* Punktraster: Punkt 1,3 px, Raster 26 px. Editor.tsx verschiebt es mit der Ansicht. */
+.dot-grid {
+  background-color: var(--canvas);
+  background-image: radial-gradient(var(--dot) 1.3px, transparent 1.3px);
+  background-size: 26px 26px;
+}
+
+.ipad-canvas {
+  background-color: var(--canvas);
+}
+
+.hand-title {
+  margin: 0;
+  font-family: var(--font-hand);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+}
+
+/* ---------- Notizbuch-Leiste ---------- */
+
+.rail {
+  width: 84px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 16px 0;
+  background: var(--rail);
+  border-right: 1px solid var(--border);
+}
+
+.rail__tab {
+  width: 72px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 0;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  transition: background-color 140ms var(--ease);
+}
+
+.rail__tab:active {
+  background: var(--press);
+}
+
+.rail__tab[aria-current='true'] {
+  background: var(--surface);
+  border-color: var(--border-soft);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+}
+
+.rail__tile {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.rail__label {
+  max-width: 64px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---------- Seitenliste ---------- */
+
+.page-list {
+  width: 300px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px 16px 0;
+  background: var(--paper);
+  border-right: 1px solid var(--border);
+  min-height: 0;
+}
+
+.page-list__title {
+  font-size: 38px;
+}
+
+.page-list__subtitle {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--muted-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.page-list__search {
+  width: 100%;
+  height: 44px;
+  box-sizing: border-box;
+  border: 1px solid var(--border-input);
+  border-radius: 10px;
+  background: var(--canvas);
+  padding: 0 12px 0 40px;
+  font-family: inherit;
+  font-size: 15px;
+  color: var(--ink);
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.page-list__search::placeholder {
+  color: var(--muted-2);
+}
+
+.page-list__group {
+  margin: 16px 8px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--muted-2);
+}
+
+.page-list__note {
+  margin: 12px 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted-2);
+}
+
+.page-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  cursor: pointer;
+  -webkit-touch-callout: none;
+  transition: background-color 140ms var(--ease);
+}
+
+.page-row:active {
+  background: var(--press);
+}
+
+.page-row--selected,
+.page-row--selected:active {
+  background: var(--surface);
+  border-color: var(--border-soft);
+  box-shadow: var(--shadow-sm);
+}
+
+.page-row__title {
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 20px;
+}
+
+.page-row__date {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--muted-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Echte Vorschau der Seite (Excalidraw exportToSvg), sonst leeres Papier */
+.page-thumb {
+  width: 64px;
+  height: 48px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border-radius: 4px;
+  border: 1px solid var(--border-soft);
+  background-color: var(--canvas);
+  background-image: radial-gradient(var(--dot) 0.8px, transparent 0.8px);
+  background-size: 8px 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
+  box-sizing: border-box;
+}
+
+:root[data-theme='dark'] .page-thumb img {
+  /* wie Excalidraw im Dunkelmodus */
+  filter: invert(93%) hue-rotate(180deg);
+}
+
+/* ---------- Kopfzeile ---------- */
+
+.page-title-input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-family: var(--font-hand);
+  font-weight: 700;
+  font-size: 32px;
+  color: var(--ink);
+  padding: 0 8px;
+}
+
+.page-title-input:focus {
+  outline: none;
+  background: var(--press);
+}
+
+.status-button {
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border: 1px solid var(--border-input);
+  border-radius: 10px;
+  background: var(--canvas);
+  color: var(--ink);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease);
+}
+
+.status-button:active {
+  background: var(--press);
+}
+
+.status-button__icon {
+  display: inline-flex;
+  color: var(--muted-2);
+}
+
+/* ---------- Sheets und Menüs ---------- */
+
+.sheet-backdrop {
+  background: rgba(20, 18, 28, 0.32);
+  animation: fade-in 200ms var(--ease);
+}
+
+.sheet {
+  background: var(--paper);
+  color: var(--ink);
+  border-radius: 20px;
+  box-shadow: var(--shadow-sheet);
+  animation: rise-in 300ms var(--ease);
+}
+
+.sheet__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+}
+
+.action-menu {
+  position: fixed;
+  width: 220px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  box-shadow: var(--shadow-float);
+  animation: rise-in 180ms var(--ease);
+}
+
+.action-menu__item {
+  width: 100%;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  font-size: 15px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.action-menu__item:active {
+  background: var(--press);
+}
+
+/* ---------- Einstellungen ---------- */
+
+.settings-group {
+  margin-bottom: 24px;
+}
+
+.settings-group__title {
+  margin: 0 0 8px 4px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 20px;
+  color: var(--muted-2);
+}
+
+.settings-card {
+  background: var(--canvas);
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.settings-row {
+  width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 0 16px;
+  border: none;
+  border-bottom: 1px solid var(--divider);
+  background: transparent;
+  color: var(--ink);
+  text-align: left;
+  font-size: 16px;
+}
+
+.settings-row:last-child {
+  border-bottom: none;
+}
+
+.settings-row--button {
+  cursor: pointer;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  transition: background-color 140ms var(--ease);
+}
+
+.settings-row--button:active {
+  background: var(--press);
+}
+
+.settings-row--button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.settings-row__icon {
+  width: 20px;
+  display: inline-flex;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--muted-2);
+}
+
+.settings-row__label {
+  flex: 1;
+  min-width: 0;
+  font-size: 16px;
+}
+
+.settings-row__hint {
+  display: block;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--muted-2);
+}
+
+.settings-row__value {
+  font-size: 15px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.settings-input {
+  flex: 1;
+  min-width: 0;
+  height: 44px;
+  border: none;
+  background: transparent;
+  font-family: inherit;
+  font-size: 16px;
+  color: var(--ink);
+  padding: 0;
+}
+
+.settings-input:focus {
+  outline: none;
+}
+
+.settings-input::placeholder {
+  color: var(--muted-2);
+}
+
+.settings-error {
+  margin: -16px 4px 24px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--danger);
+}
+
+.segmented {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--rail);
+}
+
+.segmented__option {
+  height: 36px;
+  min-width: 72px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 15px;
+  color: var(--muted);
+  cursor: pointer;
+  transition: background-color 140ms var(--ease), color 140ms var(--ease);
+}
+
+.segmented__option[aria-pressed='true'] {
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.swatch-button {
+  min-width: 44px;
+  min-height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.swatch {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: block;
+  transition: box-shadow 140ms var(--ease);
+}
+
+/* ---------- Zeichenwerkzeuge ---------- */
+
+.drawing-toolbar {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  box-shadow: var(--shadow-float);
+  max-width: calc(100% - 32px);
+}
+
+.drawing-toolbar__divider {
+  width: 1px;
+  height: 24px;
+  margin: 0 4px;
+  flex-shrink: 0;
+  background: var(--border);
+}
+
+.tool-button {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease), color 140ms var(--ease);
+}
+
+.tool-button:active {
+  background: var(--press);
+}
+
+.tool-button--active,
+.tool-button--active:active {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+
+.drawing-toolbar__popover {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 20px;
+  box-shadow: var(--shadow-float);
+  animation: fade-in 160ms var(--ease);
+}
+
+.zoom-bar {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.zoom-bar__button,
+.zoom-bar__value {
+  height: 44px;
+  border: none;
+  background: transparent;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease);
+}
+
+.zoom-bar__button:active,
+.zoom-bar__value:active {
+  background: var(--press);
+}
+
+.zoom-bar__button {
+  width: 44px;
+}
+
+.zoom-bar__value {
+  min-width: 52px;
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Leere Zustände ---------- */
+
+.empty-state {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.empty-state__body {
+  width: 360px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  animation: rise-in 300ms var(--ease);
+}
+
+.empty-state__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 28px;
+}
+
+.empty-state__text {
+  margin: 0;
+  font-size: 15px;
+  line-height: 22px;
+  color: var(--muted);
+}
+
+/* ---------- Startseite ---------- */
+
+.welcome {
+  width: 560px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  animation: rise-in 400ms var(--ease);
+}
+
+.welcome__sketch {
+  width: 100%;
+  height: auto;
+  margin-bottom: 24px;
+  color: var(--ink);
+}
+
+.welcome__title {
+  font-size: 56px;
+}
+
+.welcome__lead {
+  margin: 16px 0 0;
+  max-width: 30rem;
+  font-size: 17px;
+  line-height: 26px;
+  color: var(--muted);
+}
+
+.welcome__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.welcome__facts {
+  list-style: none;
+  margin: 32px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.welcome__facts li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--muted-2);
+}
+
+/* ---------- Excalidraw an die eigene Oberfläche anpassen ---------- */
+
+/* Papier und Punktraster scheinen durch */
+.ipad-canvas .excalidraw,
+.ipad-canvas .excalidraw .excalidraw-container {
+  background: transparent;
+  --ui-font: var(--font-ui);
+}
+
+/* Eigene Leisten ersetzen Werkzeugleiste, Menü, Bibliothek und Fußzeile.
+   Die Knöpfe bleiben im DOM, Undo/Redo und Zoom werden über sie ausgelöst. */
+.ipad-canvas .excalidraw .App-toolbar-container,
+.ipad-canvas .excalidraw .main-menu-trigger,
+.ipad-canvas .excalidraw .default-sidebar-trigger,
+.ipad-canvas .excalidraw .layer-ui__wrapper__top-right,
+.ipad-canvas .excalidraw .layer-ui__wrapper__footer-left,
+.ipad-canvas .excalidraw .layer-ui__wrapper__footer-right,
+.ipad-canvas .excalidraw .footer-center,
+.ipad-canvas .excalidraw .welcome-screen-center,
+.ipad-canvas .excalidraw .welcome-screen-decor,
+.ipad-canvas .excalidraw .App-bottom-bar .App-toolbar,
+.ipad-canvas .excalidraw .HintViewer {
+  display: none !important;
+}
+
+/* Eigenschaften-Panel (Strichstärke usw.) im Stil der Oberfläche */
+.ipad-canvas .excalidraw {
+  --island-bg-color: var(--surface);
+  --default-border-color: var(--border-soft);
+  --color-primary: var(--accent);
+  --color-primary-darker: var(--accent-ink);
+  --color-primary-darkest: var(--accent-ink);
+  --color-primary-light: var(--accent-soft);
+  --border-radius-lg: 16px;
+}
+
+.ipad-canvas .excalidraw .App-menu__left {
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  box-shadow: var(--shadow-float);
+}
+
+.ipad-canvas .excalidraw .App-menu_top {
+  padding-top: 4px;
+}
+
+.ipad-canvas .excalidraw .scroll-back-to-content {
+  bottom: 96px;
+}

@@ -3,7 +3,7 @@
 Diese Datei fasst die Design-Entscheidungen für eine neue, iPad-taugliche Oberfläche zusammen,
 damit ein neuer Agent (oder Entwickler) sie umsetzen kann, ohne den Chatverlauf zu kennen.
 
-- **Stand:** Designentwurf in drei Artboards, noch nichts davon im App-Code umgesetzt.
+- **Stand:** umgesetzt (Schritte 1–4 der Reihenfolge unten, ohne echte Mini-Vorschauen). Siehe „Umsetzung“ am Ende.
 - **Referenz:** `docs/ui-redesign/reference/` enthält die Artboards als `*.dc.html` (Quelltext des Design-Tools) plus `canvas.json` (Positionen). Sie sind Quelltext zum Nachlesen von Maßen, Farben und Markup. Eigenständig im Browser öffnen lassen sie sich nicht, weil `support.js` des Design-Tools fehlt. Das Design-Artifact selbst ist privat beim Besitzer.
 - **Sprache der Oberfläche:** Deutsch.
 - **Zielgerät:** iPad im Querformat, Entwurfsgröße 1194 × 834 pt (iPad Pro 11"). Hochformat und kleinere iPads sind nicht entworfen.
@@ -117,3 +117,36 @@ Vorgeschlagene Reihenfolge:
 - Dunkles Design: Farben für Dunkel sind nicht entworfen.
 - Unterordner in Notizbüchern: Darstellung offen.
 - Auf der Zeichenfläche steht keine Uhrzeit des letzten Speicherns mehr, nur „Lokal gespeichert“. Falls die Zeit gewünscht ist, in den Kopf-Knopf integrieren, nicht zusätzlich einblenden.
+
+## Umsetzung
+
+Code unter `src/components/ipad/` (Leiste, Seitenliste, Kopfzeile, Startseite, Sheets, Werkzeugleiste, `ipad.css`), Tokens in `src/index.css`, Zeichenfläche in `src/components/Editor/Editor.tsx`. `TopBar`, `Sidebar`/`FolderTree` und der alte `SyncSettingsDialog` sind entfernt.
+
+Entscheidungen zu den offenen Punkten:
+
+- **Notizbuch-Metadaten:** Datei `.excalinote.json` (Kürzel, Farbe) im Notizbuch-Ordner. Versteckte Dateien erscheinen nirgends in der Oberfläche. Ohne Datei werden Kürzel und Farbe aus Name und Reihenfolge abgeleitet.
+- **Lose Seiten:** `.excalidraw`-Dateien direkt in `ExcaliNote/` erscheinen als eigenes Notizbuch „Lose Seiten“.
+- **Unterordner:** flach als Gruppen mit Überschrift („Optik“, tiefer „A / B“) unter den Seiten der obersten Ebene. Neue Seiten landen in der obersten Ebene.
+- **Sortierung:** Seiten nach Änderungsdatum, neueste oben. `readDir` liefert dafür jetzt `mtime` und `size` (Electron und iOS).
+- **Bearbeiten/Löschen:** langes Drücken (oder Rechtsklick) auf einen Notizbuch-Reiter öffnet das Notizbuch-Sheet (Name, Kürzel, Farbe, Löschen), auf eine Seite das Menü „Seite löschen“. Umbenennen einer Seite über den Titel in der Kopfzeile.
+- **Werkzeugleiste:** eigene Leiste (Weg 2), Excalidraws Leiste, Menü, Bibliothek und Fußzeile sind per CSS ausgeblendet. Undo/Redo und Zoom lösen die ausgeblendeten Excalidraw-Knöpfe aus (0.17 hat dafür keine API). Textmarker = Freihand in Gelb, 40 % Deckkraft. Das Eigenschaften-Panel von Excalidraw (Strichstärke usw.) bleibt links oben.
+- **Punktraster:** CSS-Hintergrund hinter einer transparenten Zeichenfläche, wandert mit Verschieben und Zoom mit. Seiten mit weißem Hintergrund werden dafür als `transparent` gespeichert; Seiten mit eigener Hintergrundfarbe behalten sie.
+- **Speichern:** nur bei echten Inhaltsänderungen (Szenen-Version), nicht beim Verschieben der Ansicht. „Speichert …“ erscheint erst, wenn das Speichern länger als 0,6 s dauert.
+- **Dunkles Design:** Tokens unter `:root[data-theme='dark']` aus den hellen abgeleitet (nicht vom Entwurf gedeckt, bei Bedarf nachgestalten).
+- **Hochformat / schmale Fenster (< 1000 px):** Seitenliste startet eingeklappt und fährt als Überlagerung ein; nach Auswahl einer Seite schließt sie.
+- **ZIP-Backup:** `fflate`. iOS: Datei landet in Dateien › Auf meinem iPad › ExcaliNote; Desktop: Download.
+- **Server:** nur `https://` (Ausnahme `http://localhost` zum Testen).
+- **Schriften:** `@fontsource/inter` und `@fontsource/caveat`, lokal gebündelt.
+
+Prüfen im Browser ohne Gerät: `CAPACITOR=1 npx vite`, dann `http://localhost:5173/?demo` mit Viewport 1194 × 834. Im Dev-Modus ersetzt `src/platform/memoryFs.ts` das Dateisystem (`?demo` füllt Beispiel-Notizbücher ein, ohne startet die App leer). Nicht im Produktions-Bundle enthalten.
+
+Überarbeitung nach dem Entwurf (unslop-Durchgang):
+
+- Abstände im 4er-Raster, Radien verschachtelt (Leiste 20/Knöpfe 16, Karten 16, Knöpfe 10), keine Pillen mehr bei Status, Zoom und „Fertig“.
+- Neutrale Rampe mit Haarlinien aus der Tintenfarbe, Akzent nur für Hauptaktion, Schalter und aktives Werkzeug. Auswahl in Leiste und Seitenliste als Flächenstufe statt Akzentrahmen. Dunkles Design warm statt violettstichig.
+- Handschrift (Caveat) nur für Namen von Notizbüchern und Seiten sowie die Überschrift der Startseite. Sheet-Titel und Gruppentitel in Inter, Satzschreibung statt Versalien.
+- Startseite: statt zentrierter Willkommenskarte eine Beispielskizze auf dem Punktpapier und eine Überschrift, die sagt, was die App tut.
+- Seitenliste mit echten Vorschauen (`exportToSvg`, gecacht pro Datei und Änderungszeit). „lokal gespeichert“ steht nur noch im Kopf-Knopf.
+- Bewegung: eine Kurve (`--ease`), Sheets und Menüs blenden kurz ein.
+
+Noch offen: Test auf einem echten iPad (Touch, Apple Pencil, Tastatur).

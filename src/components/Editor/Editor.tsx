@@ -1,50 +1,45 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { Excalidraw, Footer, MainMenu } from '@excalidraw/excalidraw';
+import { Excalidraw, MainMenu, getSceneVersion } from '@excalidraw/excalidraw';
 import { ExcalidrawElement } from '@excalidraw/excalidraw/types/element/types';
 import { AppState, BinaryFiles, ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types/types';
-import { Loader2 } from 'lucide-react';
 import { useNotebookStore } from '../../store/notebookStore';
+import { useEditorStore } from '../../store/editorStore';
 import { useSyncStore } from '../../store/syncStore';
 import { logger } from '../../utils/logger';
-import './ExcalidrawOverrides.css';
-import bannerImage from '../../assets/excalinotes_banner.png';
+import DrawingToolbar, { ZoomBar } from '../ipad/DrawingToolbar';
+import { NotebookIcon, PlusIcon } from '../ipad/icons';
+import { pageTitle, uniqueName } from '../ipad/utils';
+
+/** Seiten mit Standard-Hintergrund zeigen das Papier samt Punktraster dahinter */
+const PAPER_BACKGROUNDS = ['#ffffff', '#fff', '#fffefb', 'transparent'];
+const GRID_SIZE = 26;
 
 export default function Editor() {
-  const { 
-    currentNote, 
-    saveNote, 
-    setTheme, 
+  const {
+    currentNote,
+    saveNote,
     theme,
     loadNotebooks,
-    showGrid
+    showGrid,
   } = useNotebookStore();
-  
-  const [excalidrawAPI, setExcalidrawAPI] = useState<ExcalidrawImperativeAPI | null>(null);
+  // Nur die (stabilen) Setter: kein Re-Render bei jeder Zustandsänderung
+  const { setApi, setActiveTool, setZoom, setSaveStatus } = useEditorStore.getState();
 
-  // Sync grid state with Excalidraw
-  useEffect(() => {
-    if (excalidrawAPI) {
-      excalidrawAPI.updateScene({
-        appState: {
-          gridSize: showGrid ? 20 : null
-        }
-      });
-    }
-  }, [excalidrawAPI, showGrid]);
   const [initialData, setInitialData] = useState<{
     elements?: ExcalidrawElement[];
     appState?: any;
     files?: BinaryFiles;
   } | null>(null);
   const [loadedNotePath, setLoadedNotePath] = useState<string | null>(null);
-  const [saveStatus, setSaveStatus] = useState<'saved' | 'saving' | 'unsaved'>('saved');
-  const [lastSaved, setLastSaved] = useState<Date | null>(null);
-  
-  // useRef für Debouncing und Theme-Tracking
+
+  // useRef für Debouncing und Änderungserkennung
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const previousElementsRef = useRef<readonly ExcalidrawElement[]>([]);
+  const saveTimeoutNoteRef = useRef<string | null>(null);
+  const sceneVersionRef = useRef<number | null>(null);
+  const fileCountRef = useRef(0);
+  const backgroundRef = useRef<string | undefined>(undefined);
   const loadedNoteRef = useRef<string | null>(null);
-  const previousThemeRef = useRef<string | undefined>(undefined);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   // Sync-Store für Datei-Updates
   const { lastSyncUpdate } = useSyncStore();
@@ -66,255 +61,244 @@ export default function Editor() {
   useEffect(() => {
     const loadCurrentNote = async () => {
       if (!currentNote || !window.electron) return;
-      
+
       // Reset status on note switch
       setSaveStatus('saved');
-      setLastSaved(null);
-      
+
       // Verhindere doppeltes Laden derselben Notiz
       if (loadedNoteRef.current === currentNote) return;
-      
+
       loadedNoteRef.current = currentNote;
-      
+
+      let data: any = { elements: [], appState: {}, files: {} };
       try {
         logger.info('[Editor] Lade Notiz', { currentNote });
-        
+
         // Lade JSON-Datei mit elements, appState UND files (Bilder inline)
         const content = await window.electron.fs.readFile(currentNote);
-        
-        // RACE CONDITION CHECK: 
+
+        // RACE CONDITION CHECK:
         // Prüfe ob die geladene Notiz noch immer die aktuell ausgewählte ist.
         // Wenn der User inzwischen gewechselt hat, verwerfen wir das Ergebnis.
         if (currentNote !== loadedNoteRef.current) {
-          logger.info('[Editor] Ladevorgang verworfen - User hat bereits gewechselt', { 
-            loaded: currentNote, 
-            current: loadedNoteRef.current 
+          logger.info('[Editor] Ladevorgang verworfen - User hat bereits gewechselt', {
+            loaded: currentNote,
+            current: loadedNoteRef.current
           });
           return;
         }
 
-        const data = JSON.parse(content);
-        
-        logger.info('[Editor] Notiz-Daten geladen', { 
+        data = JSON.parse(content);
+        logger.info('[Editor] Notiz-Daten geladen', {
           elementCount: data.elements?.length || 0,
           fileCount: Object.keys(data.files || {}).length,
-          currentNote 
-        });
-        
-        // Excalidraw-Standard: files sind bereits in der JSON-Datei enthalten
-        setInitialData({
-          elements: data.elements || [],
-          appState: data.appState || {},
-          files: data.files || {}
-        });
-        setLoadedNotePath(currentNote);
-        
-        logger.info('[Editor] InitialData gesetzt', { 
-          elementCount: data.elements?.length || 0,
-          fileCount: Object.keys(data.files || {}).length,
-          currentNote 
+          currentNote
         });
       } catch (error) {
         logger.error('[Editor] Fehler beim Laden der Notiz', { currentNote, error });
-        // Neue leere Notiz
-        setInitialData({
-          elements: [],
-          appState: {},
-          files: {}
-        });
-        setLoadedNotePath(currentNote);
       }
+
+      // Weißer Standard-Hintergrund → transparent, damit Papier und Punktraster durchscheinen
+      const appState = { ...(data.appState || {}) };
+      const background = String(appState.viewBackgroundColor ?? '#ffffff').toLowerCase();
+      if (PAPER_BACKGROUNDS.includes(background)) {
+        appState.viewBackgroundColor = 'transparent';
+      }
+      // Excalidraws Linienraster ersetzt das eigene Punktraster
+      appState.gridSize = null;
+      // Neue Striche in der Farbe der eigenen Werkzeugleiste
+      appState.currentItemStrokeColor = useEditorStore.getState().strokeColor;
+      appState.currentItemOpacity = 100;
+      useEditorStore.setState({ penMode: 'pen' });
+
+      const elements = data.elements || [];
+      sceneVersionRef.current = getSceneVersion(elements);
+      fileCountRef.current = Object.keys(data.files || {}).length;
+      backgroundRef.current = appState.viewBackgroundColor;
+
+      setInitialData({ elements, appState, files: data.files || {} });
+      setLoadedNotePath(currentNote);
     };
 
     loadCurrentNote();
-  }, [currentNote]);
+  }, [currentNote, setSaveStatus]);
 
-  // Cleanup für Debouncing
+  // Cleanup für Debouncing und API
   useEffect(() => {
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
       }
+      setApi(null);
     };
+  }, [setApi]);
+
+  // Punktraster mit der Zeichenfläche mitbewegen (direkt am DOM, ohne Re-Render)
+  const updateGrid = useCallback((appState: AppState) => {
+    const el = canvasRef.current;
+    if (!el) return;
+    const zoom = appState.zoom.value;
+    const size = GRID_SIZE * zoom;
+    el.style.backgroundSize = `${size}px ${size}px`;
+    el.style.backgroundPosition = `${appState.scrollX * zoom}px ${appState.scrollY * zoom}px`;
   }, []);
 
-  // Auto-Save: Änderungen automatisch speichern
+  // Auto-Save: nur bei echten Inhaltsänderungen speichern (nicht beim Verschieben der Ansicht)
   const handleChange = useCallback(
     (elements: readonly ExcalidrawElement[], appState: AppState, files: BinaryFiles) => {
+      // Zustand für die eigene Oberfläche
+      const editor = useEditorStore.getState();
+      if (editor.activeTool !== appState.activeTool.type) setActiveTool(appState.activeTool.type);
+      if (editor.zoom !== appState.zoom.value) setZoom(appState.zoom.value);
+      updateGrid(appState);
+
       if (!currentNote) return;
 
-      // Speichere bei echten Inhaltsänderungen
-      const dataToSave = {
-        elements,
-        appState: {
-          viewBackgroundColor: appState.viewBackgroundColor,
-          currentItemFontFamily: appState.currentItemFontFamily,
-          currentItemFontSize: appState.currentItemFontSize,
-          currentItemStrokeColor: appState.currentItemStrokeColor,
-          currentItemBackgroundColor: appState.currentItemBackgroundColor,
-          currentItemFillStyle: appState.currentItemFillStyle,
-          currentItemStrokeWidth: appState.currentItemStrokeWidth,
-          currentItemRoughness: appState.currentItemRoughness,
-          currentItemOpacity: appState.currentItemOpacity,
-        },
-        files,
-      };
+      const version = getSceneVersion(elements);
+      const fileCount = Object.keys(files).length;
+      if (
+        version === sceneVersionRef.current &&
+        fileCount === fileCountRef.current &&
+        appState.viewBackgroundColor === backgroundRef.current
+      ) {
+        return;
+      }
+      sceneVersionRef.current = version;
+      fileCountRef.current = fileCount;
+      backgroundRef.current = appState.viewBackgroundColor;
 
       // Setze Status auf unsaved
       setSaveStatus('unsaved');
 
-      // Clear existing timeout
-      if (saveTimeoutRef.current) {
+      // Ausstehendes Speichern derselben Seite ersetzen; das einer anderen Seite läuft weiter
+      if (saveTimeoutRef.current && saveTimeoutNoteRef.current === currentNote) {
         clearTimeout(saveTimeoutRef.current);
       }
 
       // Debounced save (500ms)
+      saveTimeoutNoteRef.current = currentNote;
       saveTimeoutRef.current = setTimeout(async () => {
+        saveTimeoutRef.current = null;
         setSaveStatus('saving');
         try {
           // Excalidraw-Standard: Speichere alles inline in der JSON-Datei
-          const dataToSaveComplete = {
+          await saveNote(currentNote, {
+            type: 'excalidraw',
+            version: 2,
+            source: 'https://excalinote.app',
             elements,
-            appState: dataToSave.appState,
+            appState: {
+              viewBackgroundColor: appState.viewBackgroundColor,
+              currentItemFontFamily: appState.currentItemFontFamily,
+              currentItemFontSize: appState.currentItemFontSize,
+              currentItemStrokeColor: appState.currentItemStrokeColor,
+              currentItemBackgroundColor: appState.currentItemBackgroundColor,
+              currentItemFillStyle: appState.currentItemFillStyle,
+              currentItemStrokeWidth: appState.currentItemStrokeWidth,
+              currentItemRoughness: appState.currentItemRoughness,
+              currentItemOpacity: appState.currentItemOpacity,
+            },
             files,
-          };
-          
-          await saveNote(currentNote, dataToSaveComplete);
+          });
           setSaveStatus('saved');
-          setLastSaved(new Date());
-          logger.info('[Editor] Notiz gespeichert', { 
+          logger.info('[Editor] Notiz gespeichert', {
             currentNote,
             elementCount: elements.length,
-            fileCount: Object.keys(files).length
+            fileCount,
           });
-          
-          previousElementsRef.current = elements;
         } catch (error) {
           logger.error('[Editor] Fehler beim Speichern', { currentNote, error });
           setSaveStatus('unsaved');
         }
       }, 500);
-
-      previousElementsRef.current = elements;
     },
-    [currentNote, saveNote, setTheme, theme]
+    [currentNote, saveNote, setActiveTool, setZoom, setSaveStatus, updateGrid]
   );
 
   // Excalidraw API Handler
   const handleExcalidrawAPI = useCallback((api: ExcalidrawImperativeAPI) => {
-    try {
-      setExcalidrawAPI(api);
-      logger.info('[Editor] Excalidraw API initialisiert');
-    } catch (error) {
-      logger.error('[Editor] Fehler beim Initialisieren der Excalidraw API', { error });
-    }
-  }, []);
+    setApi(api);
+    logger.info('[Editor] Excalidraw API initialisiert');
+  }, [setApi]);
 
-  // Format Time
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString('de-DE', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    });
-  };
-
-  // Get current note name
-  const getCurrentNoteName = () => {
-    if (!currentNote) return 'Keine Notiz ausgewählt';
-    const parts = currentNote.split('/');
-    const fileName = parts[parts.length - 1];
-    return fileName.replace('.excalidraw', '');
-  };
-
-  const isDark = theme === 'dark';
-  const bgColor = isDark ? 'bg-[#121212]' : 'bg-white';
+  const canvasClass = `ipad-canvas flex-1 relative overflow-hidden${showGrid ? ' dot-grid' : ''}`;
 
   if (!currentNote) {
     return (
-      <div className={`flex-1 h-full flex items-center justify-center ${bgColor}`}>
-        <img 
-          src={bannerImage} 
-          alt="ExcaliNote" 
-          className="max-w-lg w-full px-8 opacity-80 object-contain" 
-        />
+      <div className={canvasClass}>
+        <EmptyNotebook />
       </div>
     );
   }
 
-  // Zeige Loading-Screen wenn Daten noch nicht für die aktuelle Notiz bereit sind
+  // Leere Fläche, bis die Daten für die aktuelle Notiz bereit sind (Laden dauert lokal nur kurz)
   if (currentNote !== loadedNotePath) {
-    const textColor = isDark ? 'text-gray-400' : 'text-gray-500';
-    
-    return (
-       <div className={`flex-1 h-full flex items-center justify-center ${bgColor}`}>
-         <div className={`flex flex-col items-center gap-2 ${textColor}`}>
-            <Loader2 className="animate-spin" size={24} />
-            <span className="text-sm">Lade Notiz...</span>
-         </div>
-       </div>
-    );
+    return <div className={canvasClass} aria-busy="true" />;
   }
 
   return (
-    <div className="flex-1 h-full">
+    <div ref={canvasRef} className={canvasClass}>
       <Excalidraw
-          key={currentNote}
-          excalidrawAPI={handleExcalidrawAPI}
-          onChange={handleChange}
-          initialData={initialData}
-          validateEmbeddable={(url) => {
-            // Erlaube alle http/https URLs für Web Embeds (nicht nur bekannte Domains)
-            if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
-              return true;
-            }
-            return false;
-          }}
-          UIOptions={{
-            canvasActions: {
-              loadScene: false,
-              export: { saveFileToDisk: false },
-              changeViewBackgroundColor: true,
-            },
-          }}
-          langCode="de"
-          theme={theme}
-        >
-          {/* Footer mit Notiz-Info */}
-          <Footer>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '16px',
-              padding: '0 12px',
-              fontSize: '13px',
-              color: isDark ? '#e5e5e5' : '#171717'
-            }}>
-              <span>{getCurrentNoteName()}</span>
-              {lastSaved && (
-                <span>
-                  Gespeichert: {formatTime(lastSaved)}
-                </span>
-              )}
-              {saveStatus === 'saving' && (
-                <span style={{ color: isDark ? '#60a5fa' : '#2563eb' }}>
-                  Speichert...
-                </span>
-              )}
-            </div>
-          </Footer>
+        key={currentNote}
+        excalidrawAPI={handleExcalidrawAPI}
+        onChange={handleChange}
+        initialData={initialData}
+        validateEmbeddable={(url) => {
+          // Erlaube alle http/https URLs für Web Embeds (nicht nur bekannte Domains)
+          if (url && (url.startsWith('http://') || url.startsWith('https://'))) {
+            return true;
+          }
+          return false;
+        }}
+        UIOptions={{
+          canvasActions: {
+            loadScene: false,
+            export: { saveFileToDisk: true },
+            changeViewBackgroundColor: true,
+          },
+        }}
+        langCode="de"
+        theme={theme}
+      >
+        {/* Leeres Menü: unterdrückt Excalidraws Standardmenü und Willkommensbildschirm */}
+        <MainMenu />
+      </Excalidraw>
+      <ZoomBar />
+      <DrawingToolbar />
+    </div>
+  );
+}
 
-          {/* Angepasstes MainMenu */}
-          <MainMenu>
-            <MainMenu.DefaultItems.LoadScene />
-            <MainMenu.DefaultItems.SaveAsImage />
-            <MainMenu.DefaultItems.Export />
-            <MainMenu.Separator />
-            <MainMenu.DefaultItems.ChangeCanvasBackground />
-            <MainMenu.DefaultItems.ClearCanvas />
-            <MainMenu.Separator />
-            <MainMenu.DefaultItems.Help />
-          </MainMenu>
-        </Excalidraw>
+/** Notizbuch gewählt, aber keine Seite offen (z. B. leeres Notizbuch) */
+function EmptyNotebook() {
+  const { notebooks, selectedNotebook, createNote } = useNotebookStore();
+  if (selectedNotebook === null) return null;
+
+  const items = selectedNotebook === ''
+    ? notebooks
+    : notebooks.find((item) => item.path === selectedNotebook)?.children ?? [];
+  const taken = items.filter((item) => item.type === 'note').map((item) => pageTitle(item.path));
+
+  return (
+    <div className="empty-state">
+      <div className="empty-state__body">
+        <span style={{ color: 'var(--muted-2)' }}>
+          <NotebookIcon size={32} />
+        </span>
+        <div>
+          <h2 className="empty-state__title">Noch keine Seite</h2>
+          <p className="empty-state__text">Lege eine Seite an und fang an zu zeichnen. Gespeichert wird automatisch.</p>
+        </div>
+        <button
+          type="button"
+          className="primary-button"
+          style={{ height: 48 }}
+          onClick={() => createNote(selectedNotebook, uniqueName('Unbenannt', taken)).catch((error) => logger.error('Seite konnte nicht angelegt werden', { error }))}
+        >
+          <PlusIcon size={20} />
+          Erste Seite anlegen
+        </button>
+      </div>
     </div>
   );
 }

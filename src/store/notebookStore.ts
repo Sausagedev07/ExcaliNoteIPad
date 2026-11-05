@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { NotebookStore, NotebookItem, FileSystemEntry } from '../types';
+import type { NotebookStore, NotebookItem, FileSystemEntry, NotebookMeta, ThemePreference } from '../types';
 import { logger } from '../utils/logger';
 import { syncService } from '../services/syncService';
 import { generateDocId } from '../types/sync';
@@ -82,11 +82,16 @@ async function loadFolderRecursive(path: string): Promise<NotebookItem[]> {
     const items: NotebookItem[] = [];
 
     for (const entry of entries) {
+      // Versteckte Dateien (z. B. `.excalinote.json`) gehören nicht in die Ansicht
+      if (entry.name.startsWith('.')) continue;
+
       const item: NotebookItem = {
         id: entry.path,
         name: entry.name,
         path: entry.path,
         type: entry.isDirectory ? 'folder' : 'note',
+        mtime: entry.mtime,
+        size: entry.size,
       };
 
       // Rekursiv Unterordner laden
@@ -110,6 +115,89 @@ async function loadFolderRecursive(path: string): Promise<NotebookItem[]> {
     return [];
   }
 }
+
+// ============================================================================
+// Notizbuch-Metadaten und Einstellungen
+// ============================================================================
+
+const META_FILE = '.excalinote.json';
+const PREFS_KEY = 'excalinote_prefs';
+
+export const NOTEBOOK_COLORS = [
+  { name: 'Violett', value: '#6D4AB0' },
+  { name: 'Blau', value: '#2A6AB0' },
+  { name: 'Grün', value: '#1B7568' },
+  { name: 'Orange', value: '#B4570F' },
+  { name: 'Rosa', value: '#B0386B' },
+];
+
+export const ACCENT_COLORS = [
+  { name: 'Violett', value: '#6D4AB0' },
+  { name: 'Blau', value: '#2A6AB0' },
+  { name: 'Grün', value: '#1B7568' },
+  { name: 'Rosa', value: '#B0386B' },
+];
+
+/** Kürzel aus dem Namen: „Physik“ → „Ph“, „Lineare Algebra“ → „LA“ */
+export function defaultShort(name: string): string {
+  const words = name.trim().split(/\s+/).filter(Boolean);
+  if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+  const word = words[0] || '?';
+  return word.charAt(0).toUpperCase() + word.charAt(1).toLowerCase();
+}
+
+function fallbackMeta(name: string, index: number): NotebookMeta {
+  return { short: defaultShort(name), color: NOTEBOOK_COLORS[index % NOTEBOOK_COLORS.length].value };
+}
+
+async function readNotebookMeta(path: string): Promise<NotebookMeta | null> {
+  try {
+    const data = JSON.parse(await window.electron.fs.readFile(joinPath(path, META_FILE)));
+    if (typeof data.short === 'string' && typeof data.color === 'string') {
+      return { short: data.short, color: data.color };
+    }
+  } catch {
+    // Keine Metadaten vorhanden
+  }
+  return null;
+}
+
+async function writeNotebookMeta(path: string, meta: NotebookMeta): Promise<void> {
+  await window.electron.fs.writeFile(joinPath(path, META_FILE), JSON.stringify(meta, null, 2));
+}
+
+interface Prefs {
+  themePreference: ThemePreference;
+  accent: string;
+  showGrid: boolean;
+  selectedNotebook: string | null;
+}
+
+function loadPrefs(): Prefs {
+  const defaults: Prefs = { themePreference: 'light', accent: ACCENT_COLORS[0].value, showGrid: true, selectedNotebook: null };
+  try {
+    const stored = localStorage.getItem(PREFS_KEY);
+    if (stored) return { ...defaults, ...JSON.parse(stored) };
+  } catch (error) {
+    logger.warn('Fehler beim Laden der Einstellungen', { error });
+  }
+  return defaults;
+}
+
+function savePrefs(prefs: Prefs): void {
+  try {
+    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
+  } catch (error) {
+    logger.warn('Fehler beim Speichern der Einstellungen', { error });
+  }
+}
+
+export function resolveTheme(pref: ThemePreference): 'light' | 'dark' {
+  if (pref !== 'auto') return pref;
+  return window.matchMedia?.('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+const initialPrefs = loadPrefs();
 
 // ============================================================================
 // Sync-Hilfsfunktionen (fail-safe, non-blocking)
@@ -218,14 +306,24 @@ async function syncRenameItem(oldPath: string, newPath: string, isFolder: boolea
 // Notebook Store
 // ============================================================================
 
-export const useNotebookStore = create<NotebookStore>((set, get) => ({
+export const useNotebookStore = create<NotebookStore>((set, get) => {
+  const persist = () => {
+    const { themePreference, accent, showGrid, selectedNotebook } = get();
+    savePrefs({ themePreference, accent, showGrid, selectedNotebook });
+  };
+
+  return {
   currentNote: null,
   notebooks: [],
   baseDir: '',
-  theme: 'light',
+  theme: resolveTheme(initialPrefs.themePreference),
+  themePreference: initialPrefs.themePreference,
+  accent: initialPrefs.accent,
+  selectedNotebook: initialPrefs.selectedNotebook,
+  notebookMeta: {},
   isLoading: false,
   sidebarDocked: true,
-  showGrid: false,
+  showGrid: initialPrefs.showGrid,
   expandedFolders: new Set<string>(),
   renamingPath: null,
 
@@ -237,11 +335,33 @@ export const useNotebookStore = create<NotebookStore>((set, get) => ({
 
   setBaseDir: (dir) => set({ baseDir: dir }),
 
-  setTheme: (theme) => set({ theme }),
+  setTheme: (theme) => {
+    set({ theme, themePreference: theme });
+    persist();
+  },
+
+  setThemePreference: (pref) => {
+    set({ themePreference: pref, theme: resolveTheme(pref) });
+    persist();
+  },
+
+  setAccent: (accent) => {
+    set({ accent });
+    persist();
+  },
+
+  setSelectedNotebook: (path) => {
+    if (path === get().selectedNotebook) return;
+    set({ selectedNotebook: path, currentNote: null });
+    persist();
+  },
 
   setSidebarDocked: (docked) => set({ sidebarDocked: docked }),
 
-  setShowGrid: (show) => set({ showGrid: show }),
+  setShowGrid: (show) => {
+    set({ showGrid: show });
+    persist();
+  },
 
   toggleFolder: (folderId) => set((state) => {
     const newExpanded = new Set(state.expandedFolders);
@@ -262,7 +382,29 @@ export const useNotebookStore = create<NotebookStore>((set, get) => ({
 
       // Ordnerstruktur laden
       const notebooks = await loadFolderRecursive('');
-      set({ notebooks, isLoading: false });
+
+      // Metadaten der Notizbücher (Ordner oberster Ebene)
+      const folders = notebooks.filter((item) => item.type === 'folder');
+      const metaEntries = await Promise.all(
+        folders.map(async (folder, index) => [
+          folder.path,
+          (await readNotebookMeta(folder.path)) || fallbackMeta(folder.name, index),
+        ] as const)
+      );
+      const notebookMeta = Object.fromEntries(metaEntries);
+
+      // Gewähltes Notizbuch gültig halten
+      const hasLooseNotes = notebooks.some((item) => item.type === 'note');
+      let { selectedNotebook } = get();
+      const exists = selectedNotebook === ''
+        ? hasLooseNotes
+        : folders.some((folder) => folder.path === selectedNotebook);
+      if (!exists) {
+        selectedNotebook = folders[0]?.path ?? (hasLooseNotes ? '' : null);
+      }
+
+      set({ notebooks, notebookMeta, selectedNotebook, isLoading: false });
+      persist();
     } catch (error) {
       logger.error('Fehler beim Laden der Notizbücher', { error });
       set({ isLoading: false });
@@ -293,6 +435,36 @@ export const useNotebookStore = create<NotebookStore>((set, get) => ({
       set({ renamingPath: newPath });
     } catch (error) {
       logger.error('Fehler beim Erstellen des Ordners', { parentPath, name, error });
+      throw error;
+    }
+  },
+
+  createNotebook: async (name, meta) => {
+    try {
+      const path = name.trim();
+      await window.electron.fs.createDir(path);
+      await writeNotebookMeta(path, meta);
+      syncSaveFolder(path, path);
+      set({ selectedNotebook: path, currentNote: null });
+      await get().loadNotebooks();
+    } catch (error) {
+      logger.error('Fehler beim Erstellen des Notizbuchs', { name, error });
+      throw error;
+    }
+  },
+
+  updateNotebook: async (path, name, meta) => {
+    try {
+      let target = path;
+      const newName = name.trim();
+      if (newName && newName !== path) {
+        await get().renameItem(path, newName);
+        target = newName;
+      }
+      await writeNotebookMeta(target, meta);
+      await get().loadNotebooks();
+    } catch (error) {
+      logger.error('Fehler beim Bearbeiten des Notizbuchs', { path, name, error });
       throw error;
     }
   },
@@ -356,6 +528,9 @@ export const useNotebookStore = create<NotebookStore>((set, get) => ({
       if (currentNote && (currentNote === path || currentNote.startsWith(path + '/'))) {
         set({ currentNote: null });
       }
+      if (get().selectedNotebook === path) {
+        set({ selectedNotebook: null });
+      }
 
       // Ordnerstruktur neu laden
       await get().loadNotebooks();
@@ -399,6 +574,9 @@ export const useNotebookStore = create<NotebookStore>((set, get) => ({
           set({ currentNote: newNotePath });
         }
       }
+      if (get().selectedNotebook === oldPath) {
+        set({ selectedNotebook: newPath });
+      }
 
       // Ordnerstruktur neu laden
       await get().loadNotebooks();
@@ -415,9 +593,21 @@ export const useNotebookStore = create<NotebookStore>((set, get) => ({
 
       // 2. In PouchDB speichern (non-blocking)
       syncSaveNote(path, data as ExcalidrawContent);
+
+      // 3. Änderungsdatum in der Seitenliste aktualisieren
+      const touch = (items: NotebookItem[]): NotebookItem[] =>
+        items.map((item) =>
+          item.path === path
+            ? { ...item, mtime: Date.now() }
+            : item.children && path.startsWith(item.path + '/')
+              ? { ...item, children: touch(item.children) }
+              : item
+        );
+      set({ notebooks: touch(get().notebooks) });
     } catch (error) {
       logger.error('Fehler beim Speichern der Notiz', { path, error });
       throw error;
     }
   },
-}));
+  };
+});

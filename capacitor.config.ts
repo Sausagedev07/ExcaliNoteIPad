@@ -5,7 +5,11 @@ const config: CapacitorConfig = {
   appName: 'ExcaliNote',
   webDir: 'dist',
   ios: {
-    contentInset: 'always',
+    // Safe-Areas regelt das CSS (viewport-fit=cover), nicht das native WebView
+    contentInset: 'never',
+    // Kein natives Scrollen/Bouncen: verhindert verrutschtes Layout
+    scrollEnabled: false,
+    backgroundColor: '#ffffff',
   },
 };
 

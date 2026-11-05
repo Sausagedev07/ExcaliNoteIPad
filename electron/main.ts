@@ -163,10 +163,15 @@ ipcMain.handle('fs:readDir', async (_, dirPath: string) => {
     const fullPath = validateAndResolvePath(dirPath);
     const entries = await fs.readdir(fullPath, { withFileTypes: true });
     
-    return entries.map(entry => ({
-      name: entry.name,
-      isDirectory: entry.isDirectory(),
-      path: path.join(dirPath, entry.name),
+    return Promise.all(entries.map(async entry => {
+      const stats = await fs.stat(path.join(fullPath, entry.name)).catch(() => null);
+      return {
+        name: entry.name,
+        isDirectory: entry.isDirectory(),
+        path: path.join(dirPath, entry.name),
+        mtime: stats?.mtimeMs,
+        size: stats?.size,
+      };
     }));
   } catch (error) {
     console.error('Fehler beim Lesen des Verzeichnisses:', error);

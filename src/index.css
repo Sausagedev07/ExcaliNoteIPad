@@ -2,21 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Design-Tokens (siehe docs/UI-REDESIGN.md). Die Akzentfarbe setzt App.tsx als --accent.
+   Neutrale Rampe mit leichtem Papierton, drei Textrollen, Haarlinien aus der Tintenfarbe. */
+:root {
+  --accent: #6D4AB0;
+  --paper: #F6F3EC;
+  --rail: #EEEAE1;
+  --canvas: #FDFCF9;
+  --surface: #FFFFFF;
+  --ink: #26223A;
+  --muted: #514C5E;
+  --muted-2: #6A6575;
+  --border: rgba(38, 34, 58, 0.11);
+  --border-soft: rgba(38, 34, 58, 0.09);
+  --border-input: rgba(38, 34, 58, 0.16);
+  --divider: rgba(38, 34, 58, 0.07);
+  --press: rgba(38, 34, 58, 0.06);
+  --dash: #8C8796;
+  --dot: #D8D2C6;
+  --success: #1B7568;
+  --danger: #B3261E;
+  --pen-blue: #2A6AB0;
+  --pen-orange: #B4570F;
+  --pen-green: #1B7568;
+  --switch-off: #A29DAB;
+  --accent-soft: color-mix(in srgb, var(--accent) 12%, #FFFFFF);
+  --accent-ink: color-mix(in srgb, var(--accent) 72%, #000000);
+  --shadow-sm: 0 1px 2px rgba(38, 34, 58, 0.06);
+  --shadow-float: 0 8px 24px rgba(38, 34, 58, 0.08);
+  --shadow-sheet: 0 16px 48px rgba(38, 34, 58, 0.16);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-hand: 'Caveat', cursive;
+}
+
+/* Dunkles Design: dieselbe Rampe, warm und ohne Violettstich */
+:root[data-theme='dark'] {
+  --paper: #1B1A18;
+  --rail: #151412;
+  --canvas: #121212;
+  --surface: #252320;
+  --ink: #EFEBE4;
+  --muted: #B6AFA4;
+  --muted-2: #958E83;
+  --border: rgba(239, 235, 228, 0.11);
+  --border-soft: rgba(239, 235, 228, 0.09);
+  --border-input: rgba(239, 235, 228, 0.16);
+  --divider: rgba(239, 235, 228, 0.07);
+  --press: rgba(239, 235, 228, 0.07);
+  --dash: #7A746A;
+  --dot: #34312C;
+  --switch-off: #5E5951;
+  --danger: #EF8A82;
+  --success: #5CC2A8;
+  --pen-blue: #74A7E0;
+  --pen-orange: #E2955A;
+  --pen-green: #5CBFA8;
+  --accent-soft: color-mix(in srgb, var(--accent) 30%, #1B1A18);
+  --accent-ink: color-mix(in srgb, var(--accent) 40%, #FFFFFF);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-float: 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-sheet: 0 16px 48px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
 body {
   margin: 0;
   padding: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-ui);
+  background: var(--paper);
+  color: var(--ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-tap-highlight-color: transparent;
   overflow: hidden;
 }
 
+button {
+  font-family: inherit;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+html,
+body {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
 #root {
-  width: 100vw;
-  height: 100vh;
-  height: 100dvh;
+  position: absolute;
+  inset: 0;
   box-sizing: border-box;
   /* iOS/iPadOS: Statusleiste, Home-Indikator und Notch aussparen */
   padding: env(safe-area-inset-top) env(safe-area-inset-right)
@@ -24,8 +106,107 @@ body {
 }
 
 #root > div {
-  height: 100% !important;
   width: 100% !important;
+  height: 100% !important;
+}
+
+/* iOS zoomt beim Fokus in Textfelder unter 16px: verhindern.
+   Excalidraws Texteditor und der große Seitentitel sind ausgenommen. */
+@supports (-webkit-touch-callout: none) {
+  input:not(.page-title-input),
+  select {
+    font-size: max(16px, 1em) !important;
+  }
+}
+
+/* Gemeinsame Bausteine der iPad-Oberfläche */
+.icon-button {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease);
+}
+
+.icon-button:hover,
+.icon-button:active {
+  background: var(--press);
+}
+
+.icon-button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.primary-button,
+.secondary-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 20px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease), transform 140ms var(--ease);
+}
+
+.primary-button {
+  border: none;
+  background: var(--accent);
+  color: #FFFFFF;
+}
+
+.secondary-button {
+  border: 1px solid var(--border-input);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.primary-button:active,
+.secondary-button:active {
+  transform: scale(0.98);
+}
+
+.primary-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+  transform: none;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
 /* Excalidraw-spezifische Styles */
@@ -41,14 +222,10 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
+  background: var(--border);
   border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
 }

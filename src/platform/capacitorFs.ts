@@ -58,6 +58,8 @@ const fs = {
         name: entry.name,
         isDirectory: entry.type === 'directory',
         path: clean ? `${clean}/${entry.name}` : entry.name,
+        mtime: entry.mtime,
+        size: entry.size,
       }));
   },
 

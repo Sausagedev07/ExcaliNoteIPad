@@ -38,6 +38,8 @@ export default defineConfig({
   // PouchDB benötigt 'global' Variable (Node.js Kompatibilität)
   define: {
     global: 'window',
+    // Ohne Electron-Renderer-Plugin fehlt `process` im Browser (Excalidraw fragt NODE_ENV ab)
+    ...(isCapacitor ? { 'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV ?? 'development') } : {}),
   },
   resolve: {
     alias: {
