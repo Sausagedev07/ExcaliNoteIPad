@@ -7,6 +7,8 @@ import { useEditorStore } from '../../store/editorStore';
 import { useSyncStore } from '../../store/syncStore';
 import { logger } from '../../utils/logger';
 import DrawingToolbar, { ZoomBar } from '../ipad/DrawingToolbar';
+import InstrumentLayer from '../ipad/Instruments';
+import FunctionSheet from '../ipad/FunctionSheet';
 import { NotebookIcon, PlusIcon } from '../ipad/icons';
 import { pageTitle, uniqueName, useNotebookPaper } from '../ipad/utils';
 import { paperClass, paperSpacing } from '../ipad/paper';
@@ -26,6 +28,7 @@ export default function Editor() {
   spacingRef.current = paperSpacing(paper);
   // Nur die (stabilen) Setter: kein Re-Render bei jeder Zustandsänderung
   const { setApi, setActiveTool, setZoom, setSaveStatus } = useEditorStore.getState();
+  const functionSheetOpen = useEditorStore((s) => s.functionSheetOpen);
 
   const [initialData, setInitialData] = useState<{
     elements?: ExcalidrawElement[];
@@ -152,6 +155,19 @@ export default function Editor() {
       const editor = useEditorStore.getState();
       if (editor.activeTool !== appState.activeTool.type) setActiveTool(appState.activeTool.type);
       if (editor.zoom !== appState.zoom.value) setZoom(appState.zoom.value);
+      const { view } = editor;
+      if (
+        view.scrollX !== appState.scrollX || view.scrollY !== appState.scrollY || view.zoom !== appState.zoom.value ||
+        view.offsetLeft !== appState.offsetLeft || view.offsetTop !== appState.offsetTop
+      ) {
+        editor.setView({
+          scrollX: appState.scrollX,
+          scrollY: appState.scrollY,
+          zoom: appState.zoom.value,
+          offsetLeft: appState.offsetLeft,
+          offsetTop: appState.offsetTop,
+        });
+      }
       updateGrid(appState);
 
       if (!currentNote) return;
@@ -265,14 +281,16 @@ export default function Editor() {
             changeViewBackgroundColor: true,
           },
         }}
-        langCode="de"
+        langCode="de-DE"
         theme={theme}
       >
         {/* Leeres Menü: unterdrückt Excalidraws Standardmenü und Willkommensbildschirm */}
         <MainMenu />
       </Excalidraw>
+      <InstrumentLayer />
       <ZoomBar />
       <DrawingToolbar />
+      {functionSheetOpen && <FunctionSheet />}
     </div>
   );
 }

@@ -67,3 +67,11 @@ export const EllipseIcon = icon(<ellipse cx="12" cy="12" rx="8.5" ry="6.5" />);
 export const DiamondIcon = icon(<path d="M12 3l9 9-9 9-9-9z" />);
 export const ArrowIcon = icon(<><path d="M5 19L19 5" /><path d="M10 5h9v9" /></>);
 export const LineIcon = icon(<path d="M5 19L19 5" />);
+
+// Instrumente und Funktionen
+export const CloseIcon = icon(<path d="M6 6l12 12M18 6L6 18" />);
+export const RulerIcon = icon(<><rect x="2.5" y="8" width="19" height="8" rx="1.5" /><path d="M6 8v3M9.5 8v2M13 8v3M16.5 8v2" /></>);
+export const SetSquareIcon = icon(<><path d="M3 6h18L12 15z" /><path d="M8.5 6a3.5 3.5 0 0 0 7 0" /></>);
+export const ParabolaIcon = icon(<><path d="M4 4c2 11 4 14 8 14s6-3 8-14" /><path d="M3 20h18" /></>);
+export const CompassIcon = icon(<><circle cx="12" cy="4.5" r="1.5" /><path d="M11.2 6L6 20M12.8 6L18 20" /><path d="M8 15.5a8 8 0 0 0 8 0" /></>);
+export const FunctionIcon = icon(<><path d="M4 20h16M4 20V4" /><path d="M6.5 17c3-9 5-9 6.5-5s3.5 4 6-5" /></>);

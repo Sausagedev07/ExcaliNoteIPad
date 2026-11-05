@@ -653,6 +653,184 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Instrumente ---------- */
+
+.instrument-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.instrument-layer__svg {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.instrument {
+  pointer-events: auto;
+  touch-action: none;
+  cursor: grab;
+}
+
+.instrument-capture {
+  pointer-events: auto;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.instrument__body {
+  fill: color-mix(in srgb, var(--surface) 72%, transparent);
+  stroke: var(--border-input);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+}
+
+.instrument__tick {
+  stroke: var(--ink);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  opacity: 0.7;
+}
+
+.instrument__dot {
+  fill: var(--ink);
+  opacity: 0.7;
+}
+
+.instrument__label {
+  fill: var(--muted);
+  font-family: var(--font-ui);
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+}
+
+.instrument__knob circle {
+  fill: var(--surface);
+  stroke: var(--border-input);
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
+  cursor: alias;
+}
+
+.instrument__knob-icon {
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 1.75px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  pointer-events: none;
+}
+
+.instrument-preview {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.instrument-guide {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 1px;
+  stroke-dasharray: 6 6;
+}
+
+.instrument-pin {
+  fill: var(--surface);
+  stroke: var(--accent);
+  stroke-width: 2px;
+}
+
+.instrument-readout {
+  fill: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  paint-order: stroke;
+  stroke: var(--canvas);
+  stroke-width: 4px;
+}
+
+.instrument-hint {
+  position: absolute;
+  bottom: 92px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: calc(100% - 32px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  box-shadow: var(--shadow-sm);
+  pointer-events: auto;
+  animation: fade-in 160ms var(--ease);
+}
+
+.instrument-hint__name {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.instrument-hint__text {
+  min-width: 0;
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--muted-2);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.instrument-hint__value {
+  font-size: 14px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.instrument-hint__action {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--accent-ink);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.function-preview {
+  border: 1px solid var(--border-soft);
+  border-radius: 16px;
+  background-color: var(--canvas);
+  background-image:
+    linear-gradient(to bottom, var(--rule) 1px, transparent 1px),
+    linear-gradient(to right, var(--rule) 1px, transparent 1px);
+  background-size: 12px 12px;
+  overflow: hidden;
+}
+
+.function-preview__axis {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1px;
+  opacity: 0.6;
+}
+
 /* ---------- Leere Zustände ---------- */
 
 .empty-state {

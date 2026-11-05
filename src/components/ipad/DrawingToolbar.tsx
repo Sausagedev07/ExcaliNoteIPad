@@ -1,9 +1,10 @@
 import { useState, type ReactNode } from 'react';
 import { clickExcalidrawButton, useEditorStore } from '../../store/editorStore';
 import {
-  ArrowIcon, DiamondIcon, EllipseIcon, EraserIcon, HighlighterIcon, ImageIcon, LineIcon,
-  MinusIcon, PenIcon, PlusIcon, RectangleIcon, SelectIcon, ShapesIcon, TextIcon,
+  ArrowIcon, CompassIcon, DiamondIcon, EllipseIcon, EraserIcon, FunctionIcon, HighlighterIcon, ImageIcon, LineIcon,
+  MinusIcon, ParabolaIcon, PenIcon, PlusIcon, RectangleIcon, RulerIcon, SelectIcon, SetSquareIcon, ShapesIcon, TextIcon,
 } from './icons';
+import type { Instrument } from '../../store/editorStore';
 
 export const INK_COLORS = [
   { name: 'Tinte', value: '#26223A' },
@@ -23,24 +24,34 @@ const SHAPES = [
 ];
 const SHAPE_TYPES = SHAPES.map((shape) => shape.type);
 
+const INSTRUMENTS: { type: Instrument; label: string; icon: JSX.Element }[] = [
+  { type: 'ruler', label: 'Lineal', icon: <RulerIcon /> },
+  { type: 'setsquare', label: 'Geodreieck', icon: <SetSquareIcon /> },
+  { type: 'parabola', label: 'Parabelschablone', icon: <ParabolaIcon /> },
+  { type: 'compass', label: 'Zirkel', icon: <CompassIcon /> },
+];
+
 /**
  * Schwebende Werkzeugleiste unten mittig. Ersetzt Excalidraws eigene Leiste
  * (per CSS ausgeblendet) und steuert sie über `setActiveTool`.
  */
 export default function DrawingToolbar() {
-  const { api, activeTool, penMode, setPenMode, strokeColor, setStrokeColor } = useEditorStore();
+  const { api, activeTool, penMode, setPenMode, strokeColor, setStrokeColor, instrument, setInstrument, setFunctionSheetOpen } = useEditorStore();
   const [shapesOpen, setShapesOpen] = useState(false);
+  const [instrumentsOpen, setInstrumentsOpen] = useState(false);
   const [lastShape, setLastShape] = useState('rectangle');
 
   if (!api) return null;
 
   const selectTool = (type: string) => {
     setShapesOpen(false);
+    setInstrumentsOpen(false);
     api.setActiveTool({ type: type as any });
   };
 
   const selectPen = (mode: 'pen' | 'highlighter') => {
     setShapesOpen(false);
+    setInstrumentsOpen(false);
     setPenMode(mode);
     api.updateScene({
       appState:
@@ -101,6 +112,7 @@ export default function DrawingToolbar() {
           active={shapeActive}
           expanded={shapesOpen}
           onClick={() => {
+            setInstrumentsOpen(false);
             if (shapeActive || shapesOpen) {
               setShapesOpen(!shapesOpen);
             } else {
@@ -134,6 +146,50 @@ export default function DrawingToolbar() {
       </ToolButton>
       <ToolButton label="Bild einfügen" active={activeTool === 'image'} onClick={() => selectTool('image')}>
         <ImageIcon />
+      </ToolButton>
+
+      <Divider />
+
+      <div className="relative">
+        <ToolButton
+          label="Instrumente"
+          active={instrument !== null}
+          expanded={instrumentsOpen}
+          onClick={() => {
+            setShapesOpen(false);
+            setInstrumentsOpen(!instrumentsOpen);
+          }}
+        >
+          {INSTRUMENTS.find((item) => item.type === instrument)?.icon ?? <RulerIcon />}
+        </ToolButton>
+        {instrumentsOpen && (
+          <div role="menu" aria-label="Instrumente" className="drawing-toolbar__popover">
+            {INSTRUMENTS.map((item) => (
+              <ToolButton
+                key={item.type}
+                label={item.label}
+                active={instrument === item.type}
+                onClick={() => {
+                  setInstrumentsOpen(false);
+                  setInstrument(instrument === item.type ? null : item.type);
+                }}
+              >
+                {item.icon}
+              </ToolButton>
+            ))}
+          </div>
+        )}
+      </div>
+      <ToolButton
+        label="Funktionsgraph"
+        active={false}
+        onClick={() => {
+          setShapesOpen(false);
+          setInstrumentsOpen(false);
+          setFunctionSheetOpen(true);
+        }}
+      >
+        <FunctionIcon />
       </ToolButton>
 
       <Divider />

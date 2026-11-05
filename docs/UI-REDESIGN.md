@@ -149,4 +149,11 @@ Prüfen im Browser ohne Gerät: `CAPACITOR=1 npx vite`, dann `http://localhost:5
 - Seitenliste mit echten Vorschauen (`exportToSvg`, gecacht pro Datei und Änderungszeit). „lokal gespeichert“ steht nur noch im Kopf-Knopf.
 - Bewegung: eine Kurve (`--ease`), Sheets und Menüs blenden kurz ein.
 
+Instrumente und Funktionsgraphen (Werkzeugleiste, `src/components/ipad/Instruments.tsx`, `FunctionSheet.tsx`):
+
+- **Lineal** (16 cm), **Geodreieck** (Hypotenuse 16 cm, Winkelskala) und **Parabelschablone** (y = x², 1 Einheit = 1 cm) liegen maßstabsgetreu über dem Papier. Ein Finger oder die Maus verschiebt, zwei Finger oder der Drehknopf drehen (rastet bei 15°-Schritten ein). Der Apple Pencil zeichnet überall auf dem Instrument entlang der nächsten Kante, Finger und Maus, wenn sie an der Kante ansetzen. Ergebnis sind exakte Excalidraw-Linien (Rauheit 0) in aktueller Farbe und Stärke.
+- **Zirkel:** einstechen und Radius aufziehen (Anzeige in cm), dann Bögen schlagen; Tippen zeichnet den vollen Kreis, Ziehen am Einstich verschiebt ihn.
+- **Funktionsgraph:** bis zu vier Terme f, g, h, i mit Live-Vorschau, Bereich und Einheit (0,5/1/2 cm). Eingefügt wird ein gruppiertes Koordinatensystem mit Achsen, Skala, Graphen und Beschriftung, der Ursprung liegt auf dem Papierraster. Der Parser (`mathParser.ts`) kommt ohne `eval` aus und versteht Dezimalkomma, implizite Multiplikation, sin/cos/tan, sqrt, abs, ln, log, exp, pi und e.
+- Excalidraw läuft mit `langCode="de-DE"` (vorher `de`, was auf Englisch zurückfiel).
+
 Noch offen: Test auf einem echten iPad (Touch, Apple Pencil, Tastatur).
