@@ -16,7 +16,7 @@ export default function WelcomeScreen({ onNewNotebook }: WelcomeScreenProps) {
   const device = Capacitor.isNativePlatform() ? 'iPad' : 'Gerät';
 
   return (
-    <main className="flex-1 min-w-0 flex items-center justify-center dot-grid overflow-y-auto" style={{ padding: 48 }}>
+    <main className="flex-1 min-w-0 flex items-center justify-center paper paper--dots overflow-y-auto" style={{ padding: 48 }}>
       <div className="welcome">
         <Sketch />
         <h1 className="hand-title welcome__title">Notizbücher zum Zeichnen und Schreiben von Hand</h1>

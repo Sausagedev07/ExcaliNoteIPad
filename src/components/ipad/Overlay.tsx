@@ -1,4 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
+import type { PaperStyle } from '../../types';
+import { PAPER_STYLES, paperClass } from './paper';
 
 interface SheetProps {
   title: string;
@@ -142,6 +144,27 @@ export function ActionMenu({ x, y, actions, onClose }: { x: number; y: number; a
           </button>
         ))}
       </div>
+    </div>
+  );
+}
+
+/** Papierwahl als Kacheln mit Musterprobe */
+export function PaperPicker({ value, onChange }: { value: PaperStyle; onChange: (paper: PaperStyle) => void }) {
+  return (
+    <div role="radiogroup" aria-label="Papier" className="paper-options">
+      {PAPER_STYLES.map((paper) => (
+        <button
+          key={paper.value}
+          type="button"
+          role="radio"
+          aria-checked={value === paper.value}
+          onClick={() => onChange(paper.value)}
+          className="paper-option"
+        >
+          <span className={`paper-option__sample ${paperClass(paper.value)}`} aria-hidden="true" />
+          {paper.label}
+        </button>
+      ))}
     </div>
   );
 }

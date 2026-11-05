@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { exportToSvg } from '@excalidraw/excalidraw';
 import { useNotebookStore } from '../../store/notebookStore';
-import type { NotebookItem } from '../../types';
+import type { NotebookItem, PaperStyle } from '../../types';
 import { logger } from '../../utils/logger';
 import { ActionMenu } from './Overlay';
 import { FolderIcon, PlusIcon, SearchIcon, TrashIcon } from './icons';
-import { formatPageDate, groupPages, pageTitle, uniqueName, useLongPress } from './utils';
+import { formatPageDate, groupPages, pageTitle, uniqueName, useLongPress, useNotebookPaper } from './utils';
+import { paperClass } from './paper';
 
 interface PageListProps {
   /** Wird nach dem Öffnen oder Anlegen einer Seite aufgerufen (Hochformat: Liste schließen) */
@@ -146,6 +147,7 @@ export default function PageList({ onPageOpened }: PageListProps) {
 }
 
 function PageRow({ page, selected, onOpen, onDelete }: { page: NotebookItem; selected: boolean; onOpen: () => void; onDelete: () => void }) {
+  const paper = useNotebookPaper();
   const [menu, setMenu] = useState<{ x: number; y: number } | null>(null);
   const longPress = useLongPress((x, y) => setMenu({ x, y }));
 
@@ -164,7 +166,7 @@ function PageRow({ page, selected, onOpen, onDelete }: { page: NotebookItem; sel
         }}
         className={`page-row${selected ? ' page-row--selected' : ''}`}
       >
-        <PageThumb path={page.path} mtime={page.mtime} />
+        <PageThumb path={page.path} mtime={page.mtime} paper={paper} />
         <span className="flex flex-col min-w-0">
           <span className="page-row__title truncate">{pageTitle(page.path)}</span>
           <span className="page-row__date">{formatPageDate(page.mtime)}</span>
@@ -209,7 +211,7 @@ function loadThumb(path: string, mtime?: number): Promise<string | null> {
 }
 
 /** Miniatur der Seite: die echte Zeichnung, leere Seiten als Punktpapier */
-function PageThumb({ path, mtime }: { path: string; mtime?: number }) {
+function PageThumb({ path, mtime, paper }: { path: string; mtime?: number; paper: PaperStyle }) {
   const [src, setSrc] = useState<string | null>(null);
 
   useEffect(() => {
@@ -221,7 +223,7 @@ function PageThumb({ path, mtime }: { path: string; mtime?: number }) {
   }, [path, mtime]);
 
   return (
-    <span className="page-thumb" aria-hidden="true">
+    <span className={`page-thumb ${paperClass(paper)}`} aria-hidden="true">
       {src && <img src={src} alt="" draggable={false} />}
     </span>
   );

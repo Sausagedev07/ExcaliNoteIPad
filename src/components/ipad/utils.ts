@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useNotebookStore } from '../../store/notebookStore';
-import type { NotebookItem } from '../../types';
+import type { NotebookItem, PaperStyle } from '../../types';
 
 /** Seitenname ohne Dateiendung */
 export function pageTitle(path: string): string {
@@ -98,7 +98,8 @@ export function useLongPress(onLongPress: (x: number, y: number) => void, delay 
     onContextMenu: (e: React.MouseEvent) => {
       e.preventDefault();
       clear();
-      fired.current = true;
+      // Auf einen Rechtsklick folgt kein Klick, also nichts zum Verschlucken vormerken
+      fired.current = false;
       onLongPress(e.clientX, e.clientY);
     },
     /** true, wenn der folgende Klick zum langen Drücken gehört und ignoriert werden soll */
@@ -125,4 +126,10 @@ export function useAutoOpenPage() {
   useEffect(() => {
     if (!currentNote && firstPage) setCurrentNote(firstPage);
   }, [currentNote, firstPage, setCurrentNote]);
+}
+
+/** Papier des gewählten Notizbuchs, sonst das Standardpapier */
+export function useNotebookPaper(): PaperStyle {
+  const { notebookMeta, selectedNotebook, defaultPaper } = useNotebookStore();
+  return (selectedNotebook ? notebookMeta[selectedNotebook]?.paper : undefined) ?? defaultPaper;
 }

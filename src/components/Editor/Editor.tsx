@@ -8,11 +8,11 @@ import { useSyncStore } from '../../store/syncStore';
 import { logger } from '../../utils/logger';
 import DrawingToolbar, { ZoomBar } from '../ipad/DrawingToolbar';
 import { NotebookIcon, PlusIcon } from '../ipad/icons';
-import { pageTitle, uniqueName } from '../ipad/utils';
+import { pageTitle, uniqueName, useNotebookPaper } from '../ipad/utils';
+import { paperClass, paperSpacing } from '../ipad/paper';
 
 /** Seiten mit Standard-Hintergrund zeigen das Papier samt Punktraster dahinter */
 const PAPER_BACKGROUNDS = ['#ffffff', '#fff', '#fffefb', 'transparent'];
-const GRID_SIZE = 26;
 
 export default function Editor() {
   const {
@@ -20,8 +20,10 @@ export default function Editor() {
     saveNote,
     theme,
     loadNotebooks,
-    showGrid,
   } = useNotebookStore();
+  const paper = useNotebookPaper();
+  const spacingRef = useRef(paperSpacing(paper));
+  spacingRef.current = paperSpacing(paper);
   // Nur die (stabilen) Setter: kein Re-Render bei jeder Zustandsänderung
   const { setApi, setActiveTool, setZoom, setSaveStatus } = useEditorStore.getState();
 
@@ -133,12 +135,12 @@ export default function Editor() {
     };
   }, [setApi]);
 
-  // Punktraster mit der Zeichenfläche mitbewegen (direkt am DOM, ohne Re-Render)
+  // Papiermuster mit der Zeichenfläche mitbewegen (direkt am DOM, ohne Re-Render)
   const updateGrid = useCallback((appState: AppState) => {
     const el = canvasRef.current;
     if (!el) return;
     const zoom = appState.zoom.value;
-    const size = GRID_SIZE * zoom;
+    const size = spacingRef.current * zoom;
     el.style.backgroundSize = `${size}px ${size}px`;
     el.style.backgroundPosition = `${appState.scrollX * zoom}px ${appState.scrollY * zoom}px`;
   }, []);
@@ -221,7 +223,13 @@ export default function Editor() {
     logger.info('[Editor] Excalidraw API initialisiert');
   }, [setApi]);
 
-  const canvasClass = `ipad-canvas flex-1 relative overflow-hidden${showGrid ? ' dot-grid' : ''}`;
+  const canvasClass = `ipad-canvas flex-1 relative overflow-hidden ${paperClass(paper)}`;
+
+  // Papierwechsel: Muster sofort an die aktuelle Ansicht anpassen
+  useEffect(() => {
+    const api = useEditorStore.getState().api;
+    if (api) updateGrid(api.getAppState());
+  }, [paper, updateGrid]);
 
   if (!currentNote) {
     return (

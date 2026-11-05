@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { NotebookStore, NotebookItem, FileSystemEntry, NotebookMeta, ThemePreference } from '../types';
+import type { NotebookStore, NotebookItem, FileSystemEntry, NotebookMeta, PaperStyle, ThemePreference } from '../types';
 import { logger } from '../utils/logger';
 import { syncService } from '../services/syncService';
 import { generateDocId } from '../types/sync';
@@ -154,7 +154,8 @@ async function readNotebookMeta(path: string): Promise<NotebookMeta | null> {
   try {
     const data = JSON.parse(await window.electron.fs.readFile(joinPath(path, META_FILE)));
     if (typeof data.short === 'string' && typeof data.color === 'string') {
-      return { short: data.short, color: data.color };
+      const paper = ['blank', 'dots', 'lined', 'grid'].includes(data.paper) ? (data.paper as PaperStyle) : undefined;
+      return { short: data.short, color: data.color, ...(paper ? { paper } : {}) };
     }
   } catch {
     // Keine Metadaten vorhanden
@@ -169,15 +170,21 @@ async function writeNotebookMeta(path: string, meta: NotebookMeta): Promise<void
 interface Prefs {
   themePreference: ThemePreference;
   accent: string;
-  showGrid: boolean;
+  defaultPaper: PaperStyle;
   selectedNotebook: string | null;
 }
 
 function loadPrefs(): Prefs {
-  const defaults: Prefs = { themePreference: 'light', accent: ACCENT_COLORS[0].value, showGrid: true, selectedNotebook: null };
+  const defaults: Prefs = { themePreference: 'light', accent: ACCENT_COLORS[0].value, defaultPaper: 'dots', selectedNotebook: null };
   try {
     const stored = localStorage.getItem(PREFS_KEY);
-    if (stored) return { ...defaults, ...JSON.parse(stored) };
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // Ältere Einstellung: Punktraster an/aus
+      if (parsed.defaultPaper === undefined && parsed.showGrid === false) parsed.defaultPaper = 'blank';
+      delete parsed.showGrid;
+      return { ...defaults, ...parsed };
+    }
   } catch (error) {
     logger.warn('Fehler beim Laden der Einstellungen', { error });
   }
@@ -308,8 +315,8 @@ async function syncRenameItem(oldPath: string, newPath: string, isFolder: boolea
 
 export const useNotebookStore = create<NotebookStore>((set, get) => {
   const persist = () => {
-    const { themePreference, accent, showGrid, selectedNotebook } = get();
-    savePrefs({ themePreference, accent, showGrid, selectedNotebook });
+    const { themePreference, accent, defaultPaper, selectedNotebook } = get();
+    savePrefs({ themePreference, accent, defaultPaper, selectedNotebook });
   };
 
   return {
@@ -323,7 +330,7 @@ export const useNotebookStore = create<NotebookStore>((set, get) => {
   notebookMeta: {},
   isLoading: false,
   sidebarDocked: true,
-  showGrid: initialPrefs.showGrid,
+  defaultPaper: initialPrefs.defaultPaper,
   expandedFolders: new Set<string>(),
   renamingPath: null,
 
@@ -358,8 +365,8 @@ export const useNotebookStore = create<NotebookStore>((set, get) => {
 
   setSidebarDocked: (docked) => set({ sidebarDocked: docked }),
 
-  setShowGrid: (show) => {
-    set({ showGrid: show });
+  setDefaultPaper: (paper) => {
+    set({ defaultPaper: paper });
     persist();
   },
 

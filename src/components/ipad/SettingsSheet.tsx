@@ -8,6 +8,7 @@ import { exportBackupZip, formatBytes, getStorageStats, type StorageStats } from
 import { logger } from '../../utils/logger';
 import packageJson from '../../../package.json';
 import { Group, Sheet, Switch } from './Overlay';
+import { PAPER_STYLES } from './paper';
 import { ChevronLeftIcon, ChevronRightIcon, CloudIcon, CloudOffIcon, FolderIcon, NotebookIcon, RefreshIcon, ServerIcon, ShareIcon } from './icons';
 
 export type SettingsView = 'main' | 'server';
@@ -138,7 +139,7 @@ function SyncGroup({ onOpenServer }: { onOpenServer: () => void }) {
 }
 
 function AppearanceGroup() {
-  const { themePreference, setThemePreference, showGrid, setShowGrid, accent, setAccent } = useNotebookStore();
+  const { themePreference, setThemePreference, defaultPaper, setDefaultPaper, accent, setAccent } = useNotebookStore();
   const options: { value: ThemePreference; label: string }[] = [
     { value: 'light', label: 'Hell' },
     { value: 'dark', label: 'Dunkel' },
@@ -163,9 +164,24 @@ function AppearanceGroup() {
           ))}
         </div>
       </div>
-      <div className="settings-row">
-        <div className="settings-row__label">Punktraster auf der Seite</div>
-        <Switch label="Punktraster" checked={showGrid} onChange={setShowGrid} />
+      <div className="settings-row" style={{ minHeight: 64 }}>
+        <div className="settings-row__label">
+          Standardpapier
+          <span className="settings-row__hint">Für Notizbücher ohne eigene Wahl</span>
+        </div>
+        <div role="group" aria-label="Standardpapier" className="segmented">
+          {PAPER_STYLES.map((paper) => (
+            <button
+              key={paper.value}
+              type="button"
+              className="segmented__option"
+              aria-pressed={defaultPaper === paper.value}
+              onClick={() => setDefaultPaper(paper.value)}
+            >
+              {paper.label}
+            </button>
+          ))}
+        </div>
       </div>
       <div className="settings-row" style={{ gap: 4, paddingRight: 8 }}>
         <div className="settings-row__label">Akzentfarbe</div>

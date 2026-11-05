@@ -1,10 +1,26 @@
 /* iPad-Oberfläche (docs/UI-REDESIGN.md). Farben kommen aus den Tokens in src/index.css.
    Abstände im 4er-Raster, Radien verschachtelt (innen = außen − Abstand). */
 
-/* Punktraster: Punkt 1,3 px, Raster 26 px. Editor.tsx verschiebt es mit der Ansicht. */
-.dot-grid {
+/* Papier: Punkte, Linien (8 mm) und Kästchen (5 mm), Maße in paper.ts.
+   Editor.tsx setzt background-size und -position passend zu Zoom und Verschiebung. */
+.paper {
   background-color: var(--canvas);
+}
+
+.paper--dots {
   background-image: radial-gradient(var(--dot) 1.3px, transparent 1.3px);
+  background-size: 26px 26px;
+}
+
+.paper--lined {
+  background-image: linear-gradient(to bottom, var(--rule) 1px, transparent 1px);
+  background-size: 42px 42px;
+}
+
+.paper--grid {
+  background-image:
+    linear-gradient(to bottom, var(--rule) 1px, transparent 1px),
+    linear-gradient(to right, var(--rule) 1px, transparent 1px);
   background-size: 26px 26px;
 }
 
@@ -191,9 +207,6 @@
   box-sizing: border-box;
   border-radius: 4px;
   border: 1px solid var(--border-soft);
-  background-color: var(--canvas);
-  background-image: radial-gradient(var(--dot) 0.8px, transparent 0.8px);
-  background-size: 8px 8px;
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -211,6 +224,60 @@
 :root[data-theme='dark'] .page-thumb img {
   /* wie Excalidraw im Dunkelmodus */
   filter: invert(93%) hue-rotate(180deg);
+}
+
+/* Miniaturen und Auswahlfelder zeigen das Papier verkleinert */
+.page-thumb.paper--dots,
+.paper-option__sample.paper--dots {
+  background-image: radial-gradient(var(--dot) 0.8px, transparent 0.8px);
+  background-size: 8px 8px;
+}
+
+.page-thumb.paper--grid,
+.paper-option__sample.paper--grid {
+  background-size: 8px 8px;
+}
+
+.page-thumb.paper--lined,
+.paper-option__sample.paper--lined {
+  background-size: 12px 12px;
+}
+
+.paper-options {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  padding: 12px;
+}
+
+.paper-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 4px;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 16px;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease), border-color 140ms var(--ease);
+}
+
+.paper-option[aria-checked='true'] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 500;
+}
+
+.paper-option__sample {
+  width: 64px;
+  height: 48px;
+  border-radius: 4px;
+  border: 1px solid var(--border-soft);
 }
 
 /* ---------- Kopfzeile ---------- */

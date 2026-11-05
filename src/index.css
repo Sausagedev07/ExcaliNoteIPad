@@ -20,6 +20,7 @@
   --press: rgba(38, 34, 58, 0.06);
   --dash: #8C8796;
   --dot: #D8D2C6;
+  --rule: #E2DCD1;
   --success: #1B7568;
   --danger: #B3261E;
   --pen-blue: #2A6AB0;
@@ -52,6 +53,7 @@
   --press: rgba(239, 235, 228, 0.07);
   --dash: #7A746A;
   --dot: #34312C;
+  --rule: #2C2A26;
   --switch-off: #5E5951;
   --danger: #EF8A82;
   --success: #5CC2A8;

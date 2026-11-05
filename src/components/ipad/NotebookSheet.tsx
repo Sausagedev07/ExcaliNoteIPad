@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NOTEBOOK_COLORS, defaultShort, useNotebookStore } from '../../store/notebookStore';
 import { logger } from '../../utils/logger';
-import { Group, Sheet } from './Overlay';
+import { Group, PaperPicker, Sheet } from './Overlay';
 import { TrashIcon } from './icons';
 
 interface NotebookSheetProps {
@@ -12,7 +12,7 @@ interface NotebookSheetProps {
 
 /** Notizbuch anlegen oder bearbeiten: Name, Kürzel, Farbe */
 export default function NotebookSheet({ path, onClose }: NotebookSheetProps) {
-  const { notebooks, notebookMeta, createNotebook, updateNotebook, deleteItem } = useNotebookStore();
+  const { notebooks, notebookMeta, createNotebook, updateNotebook, deleteItem, defaultPaper } = useNotebookStore();
   const existing = path ? notebookMeta[path] : null;
   const folderCount = notebooks.filter((item) => item.type === 'folder').length;
 
@@ -20,6 +20,7 @@ export default function NotebookSheet({ path, onClose }: NotebookSheetProps) {
   const [short, setShort] = useState(existing?.short ?? '');
   const [shortEdited, setShortEdited] = useState(Boolean(existing));
   const [color, setColor] = useState(existing?.color ?? NOTEBOOK_COLORS[folderCount % NOTEBOOK_COLORS.length].value);
+  const [paper, setPaper] = useState(existing?.paper ?? defaultPaper);
   const [error, setError] = useState<string | null>(null);
 
   const trimmed = name.trim();
@@ -30,7 +31,7 @@ export default function NotebookSheet({ path, onClose }: NotebookSheetProps) {
   const handleSave = async () => {
     if (invalid || taken) return;
     try {
-      const meta = { short: effectiveShort || defaultShort(trimmed), color };
+      const meta = { short: effectiveShort || defaultShort(trimmed), color, paper };
       if (path) {
         await updateNotebook(path, trimmed, meta);
       } else {
@@ -130,6 +131,10 @@ export default function NotebookSheet({ path, onClose }: NotebookSheetProps) {
             </button>
           ))}
         </div>
+      </Group>
+
+      <Group title="Papier">
+        <PaperPicker value={paper} onChange={setPaper} />
       </Group>
 
       {error && <p className="settings-error">{error}</p>}

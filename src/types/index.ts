@@ -27,7 +27,11 @@ export interface NotebookItem {
 export interface NotebookMeta {
   short: string;
   color: string;
+  /** Papier der Seiten; fehlt es, gilt das Standardpapier aus den Einstellungen */
+  paper?: PaperStyle;
 }
+
+export type PaperStyle = 'blank' | 'dots' | 'lined' | 'grid';
 
 export type ThemePreference = 'light' | 'dark' | 'auto';
 
@@ -78,9 +82,9 @@ export interface NotebookStore {
   sidebarDocked: boolean;
   setSidebarDocked: (docked: boolean) => void;
 
-  // Grid State
-  showGrid: boolean;
-  setShowGrid: (show: boolean) => void;
+  // Standardpapier für Notizbücher ohne eigene Wahl
+  defaultPaper: PaperStyle;
+  setDefaultPaper: (paper: PaperStyle) => void;
   
   // Erweiterte Ordner für Tree-Navigation
   expandedFolders: Set<string>;
